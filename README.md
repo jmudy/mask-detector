@@ -1,25 +1,78 @@
 # TensorRT YOLOv4 mask detector model on a Jetson Nano
 _Explicación de que consiste este repositorio..._
 
-## Download dataset from Kaggle
+```shell
+$ cd ~/
 
-Link para la descarga del dataset utilizado...
+$ mkdir project
+$ cd project
+```
 
-https://www.kaggle.com/andrewmvd/face-mask-detection
+## Download the dataset
 
-Se ha dividido las imágenes para entrenamiento y test en una relación 80-20%.
+```shell
+
+$ wget https://arcraftimages.s3-accelerate.amazonaws.com/Datasets/Mask/MaskPascalVOC.zip
+
+$ mkdir dataset
+$ sudo apt install zip unzip
+$ unzip MaskPascalVOC -d dataset/
+$ rm MaskPascalVOC.zip
+```
+
+Descomprimir en la carpeta project con nombre dataset
+
+```shell
+|-- annotations
+|   |-- maksssksksss0.xml
+|   |-- maksssksksss1.xml
+|   |-- maksssksksss2.xml
+|   |-- maksssksksss3.xml
+|   |-- ...
+|-- images
+|   |-- maksssksksss0.png
+|   |-- maksssksksss1.png
+|   |-- maksssksksss2.png
+|   |-- maksssksksss3.png
+```
 
 ## Convert training image labels to YOLO format
 
 ```shell
-$ cd ${HOME}/project
-$ git clone https://github.com/bjornstenger/xml2yolo.git
+$ cd ~/project
+
+$ git clone https://github.com/jmudy/xml2yolo.git
 $ cd xml2yolo
 ```
+Copiar los ficheros de etiquetas en este directorio
 
-Pegar código y explicar los cambios que se han realizado
-
+```shell
+$ cp ../dataset/annotations/*.xml .
+$ python3 convert.py
+$ rm *.xml
+```
 ## Train YOLOv4 on the custom dataset
+
+Se ha dividido las imágenes para entrenamiento y test en una relación 80-20% respectivamente.
+
+```shell
+$ cd ~/project/dataset
+
+$ mkdir obj
+$ mkdir test
+
+$ cd images
+$ cp $(ls -v | head -n 682) ../obj
+$ cp $(ls -v | tail -n 171) ../test
+
+$ cd ../annotations
+$ cp $(ls -v | head -n 682) ../obj
+$ cp $(ls -v | tail -n 171) ../test
+
+$ zip -r obj.zip obj/
+$ zip -r test.zip test/
+
+```
 
 Comentar que para el entrenamiento se ha utilizado este Notebook que estoy compartiendo. Explicar como se deben de preparar los datos antes de realizar el entrenamiento. Ficheros que se tienen que tener preparados en Google Drive.
 
@@ -30,7 +83,7 @@ https://colab.research.google.com/drive/1MriQiq8z7lxsDWkibTULqymypdeas_d-?usp=sh
 Explicación de como descargar, instalar librerías necesarias y convertir modelo YOLOv4 que se ha entrenado previamente
 
 ```shell
-$ cd ${HOME}/project
+$ cd ~/project
 $ git clone https://github.com/jkjung-avt/tensorrt_demos.git
 $ cd tensorrt_demos
 ```
