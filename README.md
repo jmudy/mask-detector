@@ -3,8 +3,8 @@ _Underconstruction..._
 
 ## Hardware
 
-- [Jetson Nano Developer Kit B01 4GB](https://www.amazon.es/gp/product/B07QWLMR24/ref=ppx_yo_dt_b_asin_title_o03_s01?ie=UTF8&psc=1) **JetPack 4.4**
-- 
+- [Jetson Nano Developer Kit B01 4GB](https://www.amazon.es/gp/product/B07QWLMR24/ref=ppx_yo_dt_b_asin_title_o03_s01?ie=UTF8&psc=1) (JetPack 4.4)
+- [AUKEY Webcam 1080P Full HD](https://www.amazon.es/AUKEY-Linterna-Port%C3%A1til-Ultravioleta-Incorporadas/dp/B01KJZV59K)
 
 ## Create a project folder
 
@@ -76,9 +76,10 @@ The images for training and test have been divided in a ratio of 80-20% respecti
 
 ```bash
 cd ~/project
+
 git clone https://github.com/jmudy/mask-detector
 cp -r mask-detector/yolov4-mask/ .
-rm -r mask-detector/
+rm -r -f mask-detector/
 ```
 
 ```bash
@@ -135,12 +136,10 @@ cd ~/project/tensorrt_demos/plugins
 make
 ```
 
-```bash
-cd ~/project/tensorrt_demos/yolo
-```
 Copiar en esta carpeta los ficheros yolov4-mask.cfg y yolov4-mask.weights
 
 ```bash
+cd ../yolo
 python3 yolo_to_onnx.py -m yolov4-mask
 python3 onnx_to_tensorrt.py -m yolov4-mask
 ```
@@ -182,6 +181,13 @@ def get_cls_dict(category_num):
     <img  width="425" src="gif/result.gif">
 </p>
 
+Cambiar que por defecto se detectan 3 clases y aumentar el umbral de confianza:
+
+```bash
+sed -i '33s/default=80/default=3/' trt_yolo.py
+sed -i '101s/conf_th=0.3/conf_th=0.8/' trt_yolo.py
+```
+Ejecutar el siguiente comando para visualizar los resultados:
 ```bash
 cd ~/project/tensorrt_demos
 python3 trt_yolo.py --usb 0 -m yolov4-mask
