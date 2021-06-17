@@ -23,17 +23,18 @@ $ rm MaskPascalVOC.zip
 Descomprimir en la carpeta project con nombre dataset
 
 ```shell
-|-- annotations
-|   |-- maksssksksss0.xml
-|   |-- maksssksksss1.xml
-|   |-- maksssksksss2.xml
-|   |-- maksssksksss3.xml
-|   |-- ...
-|-- images
-|   |-- maksssksksss0.png
-|   |-- maksssksksss1.png
-|   |-- maksssksksss2.png
-|   |-- maksssksksss3.png
+├── annotations
+│   ├── maksssksksss0.xml
+│   ├── maksssksksss1.xml
+│   ├── maksssksksss2.xml
+│   ├── maksssksksss3.xml
+│   └── ...
+└── images
+    ├── maksssksksss0.png
+    ├── maksssksksss1.png
+    ├── maksssksksss2.png
+    ├── maksssksksss3.png
+    └── ...
 ```
 
 ## Convert training image labels to YOLO format
@@ -56,6 +57,13 @@ $ rm *.xml
 Se ha dividido las imágenes para entrenamiento y test en una relación 80-20% respectivamente.
 
 ```shell
+$ cd ~/project
+$ git clone https://github.com/jmudy/mask-detector
+$ cp -r mask-detector/yolov4-mask/ .
+$ rm -r mask-detector/
+```
+
+```shell
 $ cd ~/project/dataset
 
 $ mkdir obj
@@ -69,10 +77,15 @@ $ cd ../annotations
 $ cp $(ls -v | head -n 682) ../obj
 $ cp $(ls -v | tail -n 171) ../test
 
-$ zip -r obj.zip obj/
-$ zip -r test.zip test/
-
+$ cd ..
 ```
+
+```shell
+$ zip -r obj.zip obj/ ../yolov4-mask/
+$ zip -r test.zip test/ ../yolov4-mask/
+```
+
+Copiar la carpeta `yolov4-mask` a la raíz de tu carpeta Google Drive.
 
 Comentar que para el entrenamiento se ha utilizado este Notebook que estoy compartiendo. Explicar como se deben de preparar los datos antes de realizar el entrenamiento. Ficheros que se tienen que tener preparados en Google Drive.
 
