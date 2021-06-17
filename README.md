@@ -1,28 +1,46 @@
 # TensorRT YOLOv4 mask detector model on a Jetson Nano
-_Explicación de que consiste este repositorio..._
+_Underconstruction..._
 
-```shell
-$ cd ~/
+## Hardware
 
-$ mkdir project
-$ cd project
+- [Jetson Nano Developer Kit B01 4GB](https://www.amazon.es/gp/product/B07QWLMR24/ref=ppx_yo_dt_b_asin_title_o03_s01?ie=UTF8&psc=1) **JetPack 4.4**
+- 
+
+## Create a project folder
+
+Run the following command to be in your home directory:
+```bash
+cd ~/
 ```
 
-## Download the dataset
+Create a folder called `project`
 
-```shell
-
-$ wget https://arcraftimages.s3-accelerate.amazonaws.com/Datasets/Mask/MaskPascalVOC.zip
-
-$ mkdir dataset
-$ sudo apt install zip unzip
-$ unzip MaskPascalVOC -d dataset/
-$ rm MaskPascalVOC.zip
+```bash
+mkdir project
+cd project
 ```
 
-Descomprimir en la carpeta project con nombre dataset
+## Download the mask dataset
 
-```shell
+To train the model I used the dataset [Mask Dataset](https://makeml.app/datasets/mask) from MakeML. To download it run the following command:
+
+```bash
+wget https://arcraftimages.s3-accelerate.amazonaws.com/Datasets/Mask/MaskPascalVOC.zip
+```
+
+Create a folder called dataset to store all images and label files:
+
+```bash
+mkdir dataset
+#Install the zip and unzip libraries if you don't have them
+sudo apt install zip unzip
+unzip MaskPascalVOC -d dataset/
+rm MaskPascalVOC.zip
+```
+
+Inside the dataset folder there are two folders. One with the annotations and the other with the raw images.
+
+```lisp
 ├── annotations
 │   ├── maksssksksss0.xml
 │   ├── maksssksksss1.xml
@@ -39,50 +57,50 @@ Descomprimir en la carpeta project con nombre dataset
 
 ## Convert training image labels to YOLO format
 
-```shell
-$ cd ~/project
+```bash
+cd ~/project
 
-$ git clone https://github.com/jmudy/xml2yolo.git
-$ cd xml2yolo
+git clone https://github.com/jmudy/xml2yolo.git
+cd xml2yolo
 ```
-Copiar los ficheros de etiquetas en este directorio
+Copy the label files to this directory and run the script `convert.py`.
 
-```shell
-$ cp ../dataset/annotations/*.xml .
-$ python3 convert.py
-$ rm *.xml
+```bash
+cp ../dataset/annotations/*.xml .
+python3 convert.py
+rm *.xml
 ```
 ## Train YOLOv4 on the custom dataset
 
-Se ha dividido las imágenes para entrenamiento y test en una relación 80-20% respectivamente.
+The images for training and test have been divided in a ratio of 80-20% respectively.
 
-```shell
-$ cd ~/project
-$ git clone https://github.com/jmudy/mask-detector
-$ cp -r mask-detector/yolov4-mask/ .
-$ rm -r mask-detector/
+```bash
+cd ~/project
+git clone https://github.com/jmudy/mask-detector
+cp -r mask-detector/yolov4-mask/ .
+rm -r mask-detector/
 ```
 
-```shell
-$ cd ~/project/dataset
+```bash
+cd ~/project/dataset
 
-$ mkdir obj
-$ mkdir test
+mkdir obj
+mkdir test
 
-$ cd images
-$ cp $(ls -v | head -n 682) ../obj
-$ cp $(ls -v | tail -n 171) ../test
+cd images
+cp $(ls -v | head -n 682) ../obj
+cp $(ls -v | tail -n 171) ../test
 
-$ cd ../annotations
-$ cp $(ls -v | head -n 682) ../obj
-$ cp $(ls -v | tail -n 171) ../test
+cd ../annotations
+cp $(ls -v | head -n 682) ../obj
+cp $(ls -v | tail -n 171) ../test
 
-$ cd ..
+cd ..
 ```
 
-```shell
-$ zip -r obj.zip obj/ ../yolov4-mask/
-$ zip -r test.zip test/ ../yolov4-mask/
+```bash
+zip -r obj.zip obj/ ../yolov4-mask/
+zip -r test.zip test/ ../yolov4-mask/
 ```
 
 Copiar la carpeta `yolov4-mask` a la raíz de tu carpeta Google Drive.
@@ -91,24 +109,90 @@ Comentar que para el entrenamiento se ha utilizado este Notebook que estoy compa
 
 https://colab.research.google.com/drive/1MriQiq8z7lxsDWkibTULqymypdeas_d-?usp=sharing
 
+Al terminar el entrenamiento cambiar nombre del fichero `/mydrive/yolov4-mask/backup/yolov4-mask_best.weights` a `yolov4-mask.weights`.
+
 ## Convert YOLOv4 to TensorRT model
 
-Explicación de como descargar, instalar librerías necesarias y convertir modelo YOLOv4 que se ha entrenado previamente
 
-```shell
-$ cd ~/project
-$ git clone https://github.com/jkjung-avt/tensorrt_demos.git
-$ cd tensorrt_demos
+```bash
+cd ~/project
+git clone https://github.com/jkjung-avt/tensorrt_demos.git
+cd tensorrt_demos
+```
+
+```bash
+cd ~/project/tensorrt_demos/ssd
+./install_pycuda.sh
+```
+
+```bash
+sudo apt-get install protobuf-compiler libprotoc-dev
+sudo pip3 install onnx==1.4.1
+```
+
+```bash
+cd ~/project/tensorrt_demos/plugins
+make
+```
+
+```bash
+cd ~/project/tensorrt_demos/yolo
+```
+Copiar en esta carpeta los ficheros yolov4-mask.cfg y yolov4-mask.weights
+
+```bash
+python3 yolo_to_onnx.py -m yolov4-mask
+python3 onnx_to_tensorrt.py -m yolov4-mask
+```
+
+Cambiar el fichero `~/project/tensorrt_demos/utils/yolo_classes.py`:
+
+```bash
+"""yolo_classes.py
+
+NOTE: Number of YOLO COCO output classes differs from SSD COCO models.
+"""
+
+COCO_CLASSES_LIST = [
+    'with_mask',
+    'without_mask',
+    'mask_weared_incorrect',
+]
+
+# For translating YOLO class ids (0~79) to SSD class ids (0~90)
+yolo_cls_to_ssd = [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20,
+    21, 22, 23, 24, 25, 27, 28, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58,
+    59, 60, 61, 62, 63, 64, 65, 67, 70, 72, 73, 74, 75, 76, 77, 78, 79,
+    80, 81, 82, 84, 85, 86, 87, 88, 89, 90,
+]
+
+def get_cls_dict(category_num):
+    """Get the class ID to name translation dictionary."""
+    if category_num == 3:
+        return {i: n for i, n in enumerate(COCO_CLASSES_LIST)}
+    else:
+        return {i: 'CLS%d' % i for i in range(category_num)}
 ```
 
 ## Results
 
+<p align="center">
+    <img  width="425" src="gif/result.gif">
+</p>
+
+```bash
+cd ~/project/tensorrt_demos
+python3 trt_yolo.py --usb 0 -m yolov4-mask
+```
+
 Insertar video de YouTube con los resultados expuestos. Hacer pruebas con la mascarilla puesta, quitada y mal puesta. Realizarlo con distintos modelos de mascarillas (distintas formas y colores).
 
-### References
+### References  
 
-xml2yolo -> https://github.com/bjornstenger/xml2yolo
+   This project is totally inspired by the following previous repositories:
 
-Darknet -> https://github.com/AlexeyAB/darknet
-
-tensorrt_demos -> https://github.com/jkjung-avt/tensorrt_demos
+  * [xml2yolo](https://github.com/bjornstenger/xml2yolo)
+  * [darknet](https://github.com/AlexeyAB/darknet)
+  * [tensorrt_demos](https://github.com/jkjung-avt/tensorrt_demos)
