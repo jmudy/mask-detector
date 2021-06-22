@@ -1,26 +1,33 @@
 # TensorRT YOLOv4 mask detector model on a Jetson Nano
-_Underconstruction..._
+_Underconstruction..._ _Escribir breve descripción de la aplicación que se ha desarrollado_
+
+_Hacer otro gif con la app buena_
+
+<p align="center">
+    <img  width="425" src="gif/result.gif">
+</p>
 
 ## Hardware
 
-- [Jetson Nano Developer Kit B01 4GB](https://www.amazon.es/gp/product/B07QWLMR24/ref=ppx_yo_dt_b_asin_title_o03_s01?ie=UTF8&psc=1) (JetPack 4.4)
+- [Jetson Nano Developer Kit B01 4GB](https://www.amazon.es/gp/product/B07QWLMR24/ref=ppx_yo_dt_b_asin_title_o03_s01?ie=UTF8&psc=1) ([JetPack 4.4](https://developer.nvidia.com/jetpack-sdk-44-archive))
 - [AUKEY Webcam 1080P Full HD](https://www.amazon.es/AUKEY-Linterna-Port%C3%A1til-Ultravioleta-Incorporadas/dp/B01KJZV59K)
 
-## Create a project folder
+## 1. Create a project folder
 
 Run the following command to be in your home directory:
+
 ```bash
 cd ~/
 ```
 
-Create a folder called `project`
+Create a folder called `project`:
 
 ```bash
 mkdir project
 cd project
 ```
 
-## Download the mask dataset
+## 2. Download the mask dataset
 
 To train the model I used the dataset [Mask Dataset](https://makeml.app/datasets/mask) from MakeML. To download it run the following command:
 
@@ -55,14 +62,16 @@ Inside the dataset folder there are two folders. One with the annotations and th
     └── ...
 ```
 
-## Convert training image labels to YOLO format
+## 3. Convert training image labels to YOLO format
+
+Clone the following repository:
 
 ```bash
 cd ~/project
-
 git clone https://github.com/jmudy/xml2yolo.git
 cd xml2yolo
 ```
+
 Copy the label files to this directory and run the script `convert.py`.
 
 ```bash
@@ -70,21 +79,24 @@ cp ../dataset/annotations/*.xml .
 python3 convert.py
 rm *.xml
 ```
-## Train YOLOv4 on the custom dataset
+
+## 4. Train YOLOv4 on the custom dataset
 
 The images for training and test have been divided in a ratio of 80-20% respectively.
 
+Clone the following repository to download the files to be used in the training with Google Colab.
+
 ```bash
 cd ~/project
-
 git clone https://github.com/jmudy/mask-detector
 cp -r mask-detector/yolov4-mask/ .
 rm -r -f mask-detector/
 ```
 
+Create `obj` and `test` folders to store the training and test images and labels, with a ratio of 80% training - 20% test.
+
 ```bash
 cd ~/project/dataset
-
 mkdir obj
 mkdir test
 
@@ -99,27 +111,30 @@ cp $(ls -v | tail -n 171) ../test
 cd ..
 ```
 
+Compress `obj` and `test` folders and save in `yolov4-mask` folder.
+
 ```bash
 zip -r obj.zip obj/ ../yolov4-mask/
 zip -r test.zip test/ ../yolov4-mask/
 ```
 
-Copiar la carpeta `yolov4-mask` a la raíz de tu carpeta Google Drive.
-
-Comentar que para el entrenamiento se ha utilizado este Notebook que estoy compartiendo. Explicar como se deben de preparar los datos antes de realizar el entrenamiento. Ficheros que se tienen que tener preparados en Google Drive.
+The following Google Colab Notebook can be used to train the model with the custom dataset (NOTE: Copy the `yolov4-mask` folder to the root of your Google Drive folder before using the Notebook)
 
 https://colab.research.google.com/drive/1MriQiq8z7lxsDWkibTULqymypdeas_d-?usp=sharing
 
-Al terminar el entrenamiento cambiar nombre del fichero `/mydrive/yolov4-mask/backup/yolov4-mask_best.weights` a `yolov4-mask.weights`.
+At the end of training rename the file `/mydrive/yolov4-mask/backup/yolov4-mask_best.weights` to `yolov4-mask.weights`.
 
-## Convert YOLOv4 to TensorRT model
+## 5. Convert YOLOv4 to TensorRT model
 
+Clone the following repository:
 
 ```bash
 cd ~/project
 git clone https://github.com/jkjung-avt/tensorrt_demos.git
 cd tensorrt_demos
 ```
+
+Install the following requirements:
 
 ```bash
 cd ~/project/tensorrt_demos/ssd
@@ -131,12 +146,14 @@ sudo apt-get install protobuf-compiler libprotoc-dev
 sudo pip3 install onnx==1.4.1
 ```
 
+Compile with make:
+
 ```bash
 cd ~/project/tensorrt_demos/plugins
 make
 ```
 
-Copiar en esta carpeta los ficheros yolov4-mask.cfg y yolov4-mask.weights
+Copy in the `yolo` folder the `yolov4-mask.cfg` file you have used and the `yolov4-mask.weights` file that has been created in the training with Google Colab and convert the Darknet model to ONNX model and then to TensorRT engine.
 
 ```bash
 cd ../yolo
@@ -144,7 +161,7 @@ python3 yolo_to_onnx.py -m yolov4-mask
 python3 onnx_to_tensorrt.py -m yolov4-mask
 ```
 
-Cambiar el fichero `~/project/tensorrt_demos/utils/yolo_classes.py`:
+Change the `COCO_CLASSES_LIST` in the `yolo_classes.py` file located in the `utils` folder with the classes that have been trained:
 
 ```bash
 """yolo_classes.py
@@ -174,31 +191,28 @@ def get_cls_dict(category_num):
     else:
         return {i: 'CLS%d' % i for i in range(category_num)}
 ```
-
-## Results
-
-<p align="center">
-    <img  width="425" src="gif/result.gif">
-</p>
-
-Cambiar que por defecto se detectan 3 clases y aumentar el umbral de confianza:
+Change in the `trt.py` file the default value of the classes that are detected and increase the confidence threshold:
 
 ```bash
 sed -i '33s/default=80/default=3/' trt_yolo.py
 sed -i '101s/conf_th=0.3/conf_th=0.8/' trt_yolo.py
 ```
-Ejecutar el siguiente comando para visualizar los resultados:
+## 6. Results
+
+Run the following command to display the results:
+
 ```bash
 cd ~/project/tensorrt_demos
-python3 trt_yolo.py --usb 0 -m yolov4-mask
+python3 trt_yolo.py --usb 0 --model yolov4-mask
 ```
 
-Insertar video de YouTube con los resultados expuestos. Hacer pruebas con la mascarilla puesta, quitada y mal puesta. Realizarlo con distintos modelos de mascarillas (distintas formas y colores).
+_Insertar video de YouTube con los resultados expuestos. Hacer pruebas con la mascarilla puesta, quitada y mal puesta. Realizarlo con distintos modelos de mascarillas (distintas formas y colores)._
 
-### References  
+## References  
 
    This project is totally inspired by the following previous repositories:
 
   * [xml2yolo](https://github.com/bjornstenger/xml2yolo)
   * [darknet](https://github.com/AlexeyAB/darknet)
+  * [YOLOv4-Cloud-Tutorial](https://github.com/theAIGuysCode/YOLOv4-Cloud-Tutorial)
   * [tensorrt_demos](https://github.com/jkjung-avt/tensorrt_demos)
