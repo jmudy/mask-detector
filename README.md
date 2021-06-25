@@ -111,6 +111,29 @@ cp $(ls -v | tail -n 171) ../test
 cd ..
 ```
 
+Shape of the `dataset` folder:
+
+```lisp
+├── images
+├── annotations
+├── obj
+│   ├── maksssksksss0.png
+│   ├── maksssksksss0.txt
+│   ├── maksssksksss1.png
+│   ├── maksssksksss1.txt
+│   ├── maksssksksss2.png
+│   ├── maksssksksss2.txt
+│   └── ...
+└── test
+    ├── maksssksksss682.png
+    ├── maksssksksss682.txt
+    ├── maksssksksss683.png
+    ├── maksssksksss683.txt
+    ├── maksssksksss684.png
+    ├── maksssksksss684.txt
+    └── ...
+```
+
 Compress `obj` and `test` folders and save in `yolov4-mask` folder.
 
 ```bash
@@ -134,7 +157,7 @@ git clone https://github.com/jkjung-avt/tensorrt_demos.git
 cd tensorrt_demos
 ```
 
-Install the following requirements:
+Build and install the following requirements:
 
 ```bash
 cd ~/project/tensorrt_demos/ssd
