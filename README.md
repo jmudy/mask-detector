@@ -77,7 +77,8 @@ Copy the label files to this directory and run the script `convert.py`.
 ```bash
 cp ../dataset/annotations/*.xml .
 python3 convert.py
-rm *.xml
+mv *.txt ../dataset/annotations/
+rm ../dataset/annotations/*.xml
 ```
 
 ## 4. Train YOLOv4 on the custom dataset
@@ -137,8 +138,8 @@ Shape of the `dataset` folder:
 Compress `obj` and `test` folders and save in `yolov4-mask` folder.
 
 ```bash
-zip -r obj.zip obj/ ../yolov4-mask/
-zip -r test.zip test/ ../yolov4-mask/
+zip -r ../yolov4-mask/obj.zip obj/
+zip -r ../yolov4-mask/test.zip test/
 ```
 
 The following Google Colab Notebook can be used to train the model with the custom dataset (NOTE: Copy the `yolov4-mask` folder to the root of your Google Drive folder before using the Notebook)
@@ -161,11 +162,13 @@ Build and install the following requirements:
 
 ```bash
 cd ~/project/tensorrt_demos/ssd
-./install_pycuda.sh
+. install_pycuda.sh
 ```
 
 ```bash
-sudo apt-get install protobuf-compiler libprotoc-dev
+cd ..
+wget https://raw.githubusercontent.com/jkjung-avt/jetson_nano/master/install_protobuf-3.8.0.sh
+. install_protobuf-3.8.0.sh
 sudo pip3 install onnx==1.4.1
 ```
 
