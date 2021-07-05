@@ -1,10 +1,8 @@
 # TensorRT YOLOv4 mask detector model on a Jetson Nano
-_Underconstruction..._ _Escribir breve descripción de la aplicación que se ha desarrollado_
-
-_Hacer otro gif con la app buena_
+This project presents a mask detector using TensorRT YOLOv4 on a Jetson Nano Developer Kit B01 4GB. The dataset used for YOLOv4 training is the [Mask Dataset](https://makeml.app/datasets/mask) from [MakeML](https://makeml.app/). Cause the dataset is in `Pascal VOC` format, I have used the [xml2yolo](https://github.com/bjornstenger/xml2yolo) repository to convert the labels to [Darknet](https://github.com/AlexeyAB/darknet) format. YOLOv4 has been trained using a Google Colab Notebook based on the [YOLOv4-Cloud-Tutorial](https://github.com/theAIGuysCode/YOLOv4-Cloud-Tutorial) repository. The conversion of the Darknet model from YOLOv4 to TensorRT has been carried out with the [tensorrt_demos](https://github.com/jkjung-avt/tensorrt_demos) repository. The following sections explain in detail the steps to be followed to use the mask detector.
 
 <p align="center">
-    <img  width="425" src="gif/result.gif">
+    <img  width="400" src="gif/result.gif">
 </p>
 
 ## Hardware
@@ -14,7 +12,7 @@ _Hacer otro gif con la app buena_
 
 ## 1. Create a project folder
 
-Run the following command to be in your home directory:
+Run the following command to make sure you are in your home directory:
 
 ```bash
 cd ~/
@@ -29,7 +27,7 @@ cd project
 
 ## 2. Download the mask dataset
 
-To train the model I used the dataset [Mask Dataset](https://makeml.app/datasets/mask) from MakeML. To download it run the following command:
+To train the model I used the dataset [Mask Dataset](https://makeml.app/datasets/mask) from [MakeML](https://makeml.app/). To download it run the following command:
 
 ```bash
 wget https://arcraftimages.s3-accelerate.amazonaws.com/Datasets/Mask/MaskPascalVOC.zip
@@ -72,7 +70,7 @@ git clone https://github.com/jmudy/xml2yolo.git
 cd xml2yolo
 ```
 
-Copy the label files to this directory and run the script `convert.py`.
+Copy the label files to this directory and run the script `convert.py` to convert the labels from `Pascal VOC` format to `Darknet` format.
 
 ```bash
 cp ../dataset/annotations/*.xml .
@@ -109,7 +107,7 @@ cd ../annotations
 cp $(ls -v | head -n 682) ../obj
 cp $(ls -v | tail -n 171) ../test
 
-cd ..
+cd ../
 ```
 
 Shape of the `dataset` folder:
@@ -158,15 +156,12 @@ git clone https://github.com/jkjung-avt/tensorrt_demos.git
 cd tensorrt_demos
 ```
 
-Build and install the following requirements:
+Build and install the following dependencies:
 
 ```bash
-cd ~/project/tensorrt_demos/ssd
+cd ssd
 . install_pycuda.sh
-```
-
-```bash
-cd ..
+cd ../
 wget https://raw.githubusercontent.com/jkjung-avt/jetson_nano/master/install_protobuf-3.8.0.sh
 . install_protobuf-3.8.0.sh
 sudo pip3 install onnx==1.4.1
@@ -175,19 +170,19 @@ sudo pip3 install onnx==1.4.1
 Compile with make:
 
 ```bash
-cd ~/project/tensorrt_demos/plugins
+cd plugins
 make
 ```
 
-Copy in the `yolo` folder the `yolov4-mask.cfg` file you have used and the `yolov4-mask.weights` file that has been created in the training with Google Colab and convert the Darknet model to ONNX model and then to TensorRT engine.
+Copy in the `~/project/tensorrt_demos/yolo/` folder the `yolov4-mask.cfg` file you have used and the `yolov4-mask.weights` file that has been created in the training with Google Colab and convert the Darknet model to ONNX model and then to TensorRT engine.
 
 ```bash
-cd ../yolo
+cd ~/project/tensorrt_demos/yolo
 python3 yolo_to_onnx.py -m yolov4-mask
 python3 onnx_to_tensorrt.py -m yolov4-mask
 ```
 
-Change the `COCO_CLASSES_LIST` in the `yolo_classes.py` file located in the `utils` folder with the classes that have been trained:
+Change the `COCO_CLASSES_LIST` in the `yolo_classes.py` file located in the `~/project/tensorrt_demos/utils/` folder with the classes that have been trained:
 
 ```bash
 """yolo_classes.py
@@ -220,6 +215,7 @@ def get_cls_dict(category_num):
 Change in the `trt.py` file the default value of the classes that are detected and increase the confidence threshold:
 
 ```bash
+cd ~/project/tensorrt_demos
 sed -i '33s/default=80/default=3/' trt_yolo.py
 sed -i '101s/conf_th=0.3/conf_th=0.8/' trt_yolo.py
 ```
@@ -232,7 +228,9 @@ cd ~/project/tensorrt_demos
 python3 trt_yolo.py --usb 0 --model yolov4-mask
 ```
 
-_Insertar video de YouTube con los resultados expuestos. Hacer pruebas con la mascarilla puesta, quitada y mal puesta. Realizarlo con distintos modelos de mascarillas (distintas formas y colores)._
+To view the demo please click on the following YouTube link:
+
+https://www.youtube.com/watch?v=YohIfmsn2Jg
 
 ## References  
 
