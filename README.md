@@ -2,7 +2,7 @@
 This project presents a mask detector using TensorRT YOLOv4 on a Jetson Nano Developer Kit B01 4GB. The dataset used for YOLOv4 training is the [Mask Dataset](https://makeml.app/datasets/mask) from [MakeML](https://makeml.app/). Cause the dataset is in `Pascal VOC` format, I have used the [xml2yolo](https://github.com/bjornstenger/xml2yolo) repository to convert the labels to [Darknet](https://github.com/AlexeyAB/darknet) format. YOLOv4 has been trained using a Google Colab Notebook based on the [YOLOv4-Cloud-Tutorial](https://github.com/theAIGuysCode/YOLOv4-Cloud-Tutorial) repository. The conversion of the Darknet model from YOLOv4 to TensorRT has been carried out with the [tensorrt_demos](https://github.com/jkjung-avt/tensorrt_demos) repository. The following sections explain in detail the steps to be followed to use the mask detector.
 
 <p align="center">
-    <img  width="400" src="gif/result.gif">
+    <img  width="400" src="gif/final-result.gif">
 </p>
 
 ## Hardware
