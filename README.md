@@ -212,7 +212,7 @@ def get_cls_dict(category_num):
     else:
         return {i: 'CLS%d' % i for i in range(category_num)}
 ```
-Change in the `trt.py` file the default value of the classes that are detected and increase the confidence threshold:
+Change in the `trt_yolo.py` file the default value of the classes that are detected and increase the confidence threshold:
 
 ```bash
 cd ~/project/tensorrt_demos
