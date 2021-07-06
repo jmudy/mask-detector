@@ -160,10 +160,10 @@ Build and install the following dependencies:
 
 ```bash
 cd ssd
-. install_pycuda.sh
+bash install_pycuda.sh
 cd ../
 wget https://raw.githubusercontent.com/jkjung-avt/jetson_nano/master/install_protobuf-3.8.0.sh
-. install_protobuf-3.8.0.sh
+bash install_protobuf-3.8.0.sh
 sudo pip3 install onnx==1.4.1
 ```
 
